@@ -32,21 +32,23 @@
                         <div class="error_msg" th:if="${#fields.hasErrors('employeeId')}" th:errors="*{employeeId}">
                         </div>
                     </div>
+
                     <div class="mb30">
                         <label class="input_title" for="expectedRentalOn">貸出予定日<span
                                 class="text-red asterisk">＊</span></label>
                         <input type="date" id="expectedRentalOn" class="form_input" name="expectedRentalOn"
-                            th:value="${#dates.format(rentalManageDto.expectedRentalOn, ('yyyy-MM-dd'))}"
-                            placeholder="貸出予定日を入力">
+                            th:value="${#temporals.format(rentalManageDto.expectedRentalOn, 'yyyy-MM-dd')}"
+                            min="1000-01-01" max="9999-12-31" placeholder="貸出予定日を入力">
                         <div class="error_msg" th:if="${#fields.hasErrors('expectedRentalOn')}"
                             th:errors="*{expectedRentalOn}"></div>
                     </div>
+
                     <div class="mb30">
                         <label class="input_title" for="expectedReturnOn">返却予定日<span
                                 class="text-red asterisk">＊</span></label>
                         <input type="date" id="expectedReturnOn" class="form_input" name="expectedReturnOn"
-                            th:value="${#dates.format(rentalManageDto.expectedReturnOn, ('yyyy-MM-dd'))}"
-                            placeholder="返却予定日を入力">
+                            th:value="${#temporals.format(rentalManageDto.expectedReturnOn, 'yyyy-MM-dd')}"
+                            min="1000-01-01" max="9999-12-31" placeholder="返却予定日を入力">
                         <div class="error_msg" th:if="${#fields.hasErrors('expectedReturnOn')}"
                             th:errors="*{expectedReturnOn}"></div>
                     </div>
@@ -81,3 +83,5 @@
     </div>
     <div th:replace="~{common :: footer}"></div>
 </body>
+
+</html>
