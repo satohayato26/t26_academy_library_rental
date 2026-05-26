@@ -1,9 +1,24 @@
 package jp.co.metateam.library.controller;
 
+import java.util.List;
+import javax.naming.Binding;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
 
+import jakarta.validation.Valid;
+import jp.co.metateam.library.model.Account;
+import jp.co.metateam.library.model.RentalManageDto;
+import jp.co.metateam.library.model.Stock;
+import jp.co.metateam.library.service.StockService;
+import jp.co.metateam.library.service.AccountService;
+import jp.co.metateam.library.service.RentalManageService;
+import jp.co.metateam.library.values.RentalStatus;
 import lombok.extern.log4j.Log4j2;
 
 /**
@@ -15,6 +30,7 @@ public class RentalManageController {
 
     /**
      * 貸出一覧画面初期表示
+     * 
      * @param model
      * @return
      */
@@ -28,4 +44,57 @@ public class RentalManageController {
         return "/rental/index";
     }
 
+    private final RentalManageService rentalManageService;
+    private final StockService stockService;
+    private final AccountService accountService;
+
+    @Autowired
+    public RentalManageController(StockService stockService, AccountService accountService,
+            RentalManageService rentalManageService) {
+        this.stockService = stockService;
+        this.accountService = accountService;
+        this.rentalManageService = rentalManageService;
+    }
+
+    @GetMapping("/rental/add")
+    public String add(Model model) {
+        model.addAttribute(
+                "rentalManageDto",
+                new RentalManageDto());
+
+        List<Account> accounts = this.accountService.findAll();
+        List<Stock> stockList = this.stockService.findAll();
+
+        model.addAttribute("accounts", accounts);
+        model.addAttribute("stockList", stockList);
+        model.addAttribute("rentalStatus", RentalStatus.values());
+
+        return "/rental/add";
+    }
+
+    @PostMapping("/rental/add")
+    public String save(
+            @Valid @ModelAttribute RentalManageDto rentalManageDto,
+            BindingResult result,
+            Model model) {
+        // DTOチェックエラー
+        if (result.hasErrors()) {
+            refillModelData(model);
+            return "/rental/add";
+        }
+        String statusError = rentalManageService.validateStatus(rentalManageDto);
+        if (statusError != null) {
+            model.addAttribute("statusError", statusError); // 画面のth:if="${statusError}"に渡る
+            refillModelData(model);
+            return "/rental/add";
+        }
+        // DB登録
+        this.rentalManageService.save(rentalManageDto);
+        return "redirect:/rental/index";
+    }
+    private void refillModelData(Model model) {
+        model.addAttribute("accounts", this.accountService.findAll());
+        model.addAttribute("stockList", this.stockService.findAll());
+        model.addAttribute("rentalStatus", RentalStatus.values());
+    }
 }
